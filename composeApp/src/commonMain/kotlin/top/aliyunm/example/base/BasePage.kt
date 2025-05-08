@@ -2,10 +2,12 @@ package top.aliyunm.example.base
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,40 +18,43 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import top.aliyunm.example.Ext.back
-import top.aliyunm.example.Ext.backTo
-import top.aliyunm.example.Ext.getRouter
-import top.aliyunm.example.Ext.next
-import top.aliyunm.example.Ext.nextAndClearThis
-import top.aliyunm.example.platform.setImmersiveMode
-import top.aliyunm.example.router.Router.HOME
-import top.aliyunm.example.router.navController
-import top.aliyunm.example.state.NetworkErrorHandler
-import top.aliyunm.example.state.Toast
 import example.composeapp.generated.resources.Res
 import example.composeapp.generated.resources.compose_multiplatform
-import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import top.aliyunm.example.Ext.back
+import top.aliyunm.example.Ext.backTo
+import top.aliyunm.example.Ext.getRouter
+import top.aliyunm.example.Ext.next
+import top.aliyunm.example.Ext.nextAndClearPath
+import top.aliyunm.example.Ext.nextAndClearThis
+import top.aliyunm.example.model.NavModel
+import top.aliyunm.example.platform.setImmersiveMode
+import top.aliyunm.example.router.Router.HOME
+import top.aliyunm.example.router.Router.MINE
+import top.aliyunm.example.router.navController
+import top.aliyunm.example.router.navList
+import top.aliyunm.example.state.NetworkErrorHandler
+import top.aliyunm.example.state.Toast
 
 abstract class BasePage<VM : ViewModel> {
 
@@ -102,12 +107,13 @@ abstract class BasePage<VM : ViewModel> {
     // var contentBottom: Dp = 15.dp
 
     /**
-     * 没有边距的Box
+     * 没有边距的Box按钮
      */
     lateinit var bottomButton: @Composable BoxScope.() -> Unit
 
     lateinit var lazyList: LazyListScope.() -> Unit
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun BaseUI() {
         setImmersiveMode()
@@ -116,20 +122,19 @@ abstract class BasePage<VM : ViewModel> {
 
         initData()
 
-        var contentStart = if (isFillWidth) 0.dp else 10.dp
-        var contentTop = 0.dp
-        var contentEnd = if (isFillWidth) 0.dp else 10.dp
-        var contentBottom = 0.dp
+        NetworkErrorHandler()
 
-        MaterialTheme(colorScheme = lightColorScheme(primary = Color(0xFF8B5CCC), background = Color(0XFFF2F2F2))) {
-            val modifier = if (isNeedPadding) {
-                Modifier.padding(
-                    contentStart,
-                    contentTop,
-                    contentEnd,
-                    contentBottom
-                )
-            } else Modifier.padding()
+        Toast()
+
+        var contentStart = if (isFillWidth) 0.dp else 10.dp
+        var contentEnd = if (isFillWidth) 0.dp else 10.dp
+
+        MaterialTheme(
+            colorScheme = lightColorScheme(
+                primary = Color(0xFF8B5CCC),
+                background = Color(0XFFF2F2F2)
+            )
+        ) {
 
             Scaffold(
                 topBar = {
@@ -137,41 +142,44 @@ abstract class BasePage<VM : ViewModel> {
                         setTopBar()
                     }
                 },
-                content = {
-                    AnimatedVisibility(
-                        true
-                    ) {
-                        NetworkErrorHandler()
-                        Toast()
-                        Box(
-                            modifier = modifier.fillMaxSize()
-                        ) {
-                            initView()
-                            if (this@BasePage::lazyList.isInitialized) {
-                                LazyColumn(content = {
-                                    lazyList()
-                                    item {
-                                        Spacer(modifier = Modifier.height(50.dp))
-                                    }
-                                })
-                            }
-                        }
-                        Box(
-                            modifier = Modifier.fillMaxSize()
-                                .padding(0.dp, 0.dp, 0.dp, contentBottom)
-                        ) {
-                            if (this@BasePage::bottomButton.isInitialized) {
-                                bottomButton()
-                            }
-                        }
-                    }
-                },
                 bottomBar = {
                     if (isShowBottomBar) {
                         setBottomBar()
                     }
                 }
-            )
+            ) { innerPadding ->
+
+                val modifier = if (isNeedPadding) {
+                    Modifier.padding(
+                        contentStart,
+                        innerPadding.calculateTopPadding(),
+                        contentEnd,
+                        innerPadding.calculateBottomPadding()
+                    )
+                } else Modifier.padding()
+
+                AnimatedVisibility(
+                    true
+                ) {
+                    Box(
+                        modifier = modifier,
+                    ) {
+                        initView()
+                        if (this@BasePage::lazyList.isInitialized) {
+                            LazyColumn(content = {
+                                lazyList()
+                                item {
+                                    Spacer(modifier = Modifier.height(50.dp))
+                                }
+                            })
+                        }
+
+                        if (this@BasePage::bottomButton.isInitialized) {
+                            bottomButton()
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -226,7 +234,7 @@ abstract class BasePage<VM : ViewModel> {
                     }
                 }
             },
-            modifier = Modifier.fillMaxWidth().height(TopAppBarDefaults.TopAppBarExpandedHeight)
+            modifier = Modifier.fillMaxWidth().fillMaxHeight(0.1f)
         )
     }
 
@@ -235,8 +243,18 @@ abstract class BasePage<VM : ViewModel> {
      */
     @Composable
     fun setBottomBar() {
+        val navArray = listOf(
+            NavModel("首页", Res.drawable.compose_multiplatform, HOME),
+            NavModel("我的", Res.drawable.compose_multiplatform, MINE)
+        )
         BottomAppBar(Modifier.fillMaxWidth()) {
-
+            NavigationBar {
+                navArray.forEach {
+                    Text(it.title, modifier = Modifier.weight(1f / navArray.size).clickable {
+                        navController.nextAndClearPath(navController.getRouter(), it.router)
+                    })
+                }
+            }
         }
     }
 
@@ -244,15 +262,13 @@ abstract class BasePage<VM : ViewModel> {
      * 返回
      */
     fun back() {
-        CoroutineScope(Dispatchers.Main).launch {
-            if (navController.getRouter() != HOME) {
-                navController.back()
-            }
+        if (!navList.contains(navController.getRouter())) {
+            navController.back()
         }
     }
 
     fun backTo(pageName: String) {
-        if (navController.getRouter() != HOME) {
+        if (!navList.contains(navController.getRouter())) {
             navController.backTo(pageName)
         }
     }

@@ -1,8 +1,15 @@
 package top.aliyunm.example.ui.home
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import top.aliyunm.example.Ext.next
 import top.aliyunm.example.base.BasePage
+import top.aliyunm.example.router.Router.LOGIN
+import top.aliyunm.example.router.navController
 import top.aliyunm.example.viewmodel.HomeViewModel
 
 object HomePage : BasePage<HomeViewModel>() {
@@ -15,7 +22,8 @@ object HomePage : BasePage<HomeViewModel>() {
     }
 
     override fun initData() {
-
+        isShowBack = false
+        isShowBottomBar = true
     }
 
     @Composable
@@ -25,6 +33,8 @@ object HomePage : BasePage<HomeViewModel>() {
 
     @Composable
     fun HomeUI() {
-
+        Text("Home", modifier = Modifier.clickable {
+            navController.next(LOGIN)
+        })
     }
 }

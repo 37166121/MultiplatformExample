@@ -9,8 +9,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import top.aliyunm.example.common.lifecycleOwner
 import top.aliyunm.example.common.viewModelStoreOwner
+import top.aliyunm.example.router.Router.HOME
+import top.aliyunm.example.router.Router.MINE
 import top.aliyunm.example.ui.home.HomePage
 import top.aliyunm.example.ui.login.LoginPage
+import top.aliyunm.example.ui.mine.MinePage
 
 /**
  * 路由
@@ -18,14 +21,15 @@ import top.aliyunm.example.ui.login.LoginPage
 object Router {
 
     /**
-     * 首页
-     */
-    val HOME = "Home"
-
-    /**
      * 登录页面
      */
     val LOGIN = "Login"
+
+    /**
+     * 首页
+     */
+    val HOME = "Home"
+    val MINE = "Mine"
 
     @Composable
     fun init() {
@@ -38,6 +42,7 @@ object Router {
             NavHost(navController = navController!!, startDestination = HOME) {
                 composable(HOME) { HomePage.BaseUI() }
                 composable(LOGIN) { LoginPage.BaseUI() }
+                composable(MINE) { MinePage.BaseUI() }
             }
         }
     }
@@ -49,3 +54,5 @@ val LocalNavController = staticCompositionLocalOf<NavHostController> {
 }
 
 var navController: NavHostController? = null
+
+val navList = listOf(HOME, MINE)

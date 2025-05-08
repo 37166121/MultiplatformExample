@@ -19,6 +19,7 @@ import io.ktor.utils.io.core.toByteArray
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import okio.Path
+import top.aliyunm.example.utils.LogUtils
 
 /**
  * 扩展函数
@@ -52,13 +53,15 @@ object Ext {
      */
     fun NavHostController?.nextAndClearPath(fromPage: String, toPage: String) {
         this?.navigate(toPage) { popUpTo(fromPage) { inclusive = false } }
+        stack()
     }
 
     /**
-     * 返回到某一页并且清除所有页面（包含目标页面）
+     * 返回到某一页并清除中间和目标页面
      */
     fun NavHostController?.nextAndClearThis(fromPage: String, toPage: String) {
         this?.navigate(toPage) { popUpTo(fromPage) { inclusive = true } }
+        stack()
     }
 
     /**
@@ -76,7 +79,9 @@ object Ext {
      * 查看导航堆栈
      */
     fun NavHostController?.stack() {
-
+        this?.currentBackStack?.value?.forEach {
+            LogUtils.logi(it.destination.route ?: "")
+        }
     }
 
     /**
