@@ -121,7 +121,7 @@ object ApiConfig {
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    call
+                    return@intercept call
                 }
             }
             call

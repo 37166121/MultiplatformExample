@@ -36,6 +36,15 @@ object NetworkListener {
         listeners.forEach { it(isConnected) }
     }
 
+    fun addListener(listener: (Boolean) -> Unit) {
+        listeners.add(listener)
+        return
+    }
+
+    fun removeListener(listener: (Boolean) -> Unit) {
+        listeners.remove(listener)
+    }
+
     /**
      * 是否有网络
      */

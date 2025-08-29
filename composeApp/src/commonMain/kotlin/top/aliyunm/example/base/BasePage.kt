@@ -96,17 +96,6 @@ abstract class BasePage<VM : ViewModel> {
     var isNeedPadding = true
 
     /**
-     * 页面间距
-     */
-    // open var contentStart: Dp = if (isFillWidth) 0.dp else 10.dp
-
-    // @OptIn(ExperimentalMaterial3Api::class)
-    // var contentTop: Dp =
-    //     if (isShowTopBar) TopAppBarDefaults.TopAppBarExpandedHeight + 10.dp else TopAppBarDefaults.MediumAppBarCollapsedHeight
-    // open var contentEnd: Dp = if (isFillWidth) 0.dp else 10.dp
-    // var contentBottom: Dp = 15.dp
-
-    /**
      * 没有边距的Box按钮
      */
     lateinit var bottomButton: @Composable BoxScope.() -> Unit
@@ -204,20 +193,25 @@ abstract class BasePage<VM : ViewModel> {
             },
             navigationIcon = {
                 if (isShowBack) {
-                    IconButton(onClick = {
-                        back()
-                    }, modifier = Modifier.pointerInput(Unit) {
-                        detectTapGestures(onTap = {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        IconButton(onClick = {
                             back()
-                        }, onLongPress = {
-                            close()
-                        })
-                    }) {
-                        Image(
-                            painterResource(Res.drawable.compose_multiplatform),
-                            alignment = Alignment.CenterStart,
-                            contentDescription = "返回"
-                        )
+                        }, modifier = Modifier.pointerInput(Unit) {
+                            detectTapGestures(onTap = {
+                                back()
+                            }, onLongPress = {
+                                close()
+                            })
+                        }) {
+                            Image(
+                                painterResource(Res.drawable.compose_multiplatform),
+                                alignment = Alignment.CenterStart,
+                                contentDescription = "返回"
+                            )
+                        }
                     }
                 }
             },
